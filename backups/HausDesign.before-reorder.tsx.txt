@@ -1,0 +1,874 @@
+"use client";
+
+// 4 ДЭХ ЗАГВАР · HAUS
+// Sōl Haus (Dribbble) загвараас санаа авсан: бүдэг өнгөтэй бүтэн дэлгэцийн зураг,
+// том Forum фонттой гарчиг, гоёмсог script эхний үсэг, нимгэн зураастай цэс.
+// page.tsx дээр HAUS товч дарахад энэ файл бүхэлдээ харагдана.
+// STUDIO / TOMATO / VELAA загварууд энэ файлыг огт ашигладаггүй.
+
+import Image from "next/image";
+import { useState } from "react";
+import { Forum, Great_Vibes } from "next/font/google";
+
+// Гарчгийн фонт. Ө, Ү үсгийг дэмждэг гэдгийг font-test хуудсаар шалгасан.
+const forum = Forum({ weight: "400", subsets: ["latin"], display: "swap" });
+// Гоёмсог script фонт. Зөвхөн англи үгийн эхний үсэгт хэрэглэнэ.
+const script = Great_Vibes({ weight: "400", subsets: ["latin"], display: "swap" });
+
+// page.tsx-ээс ирэх мэдээлэл: аль загвар идэвхтэй, загвар солих функц.
+type ThemeName = "classic" | "tomato" | "velaa" | "haus";
+type Props = {
+  theme: ThemeName;
+  onThemeChange: (theme: ThemeName) => void;
+};
+
+// ҮЙЛЧИЛГЭЭНИЙ 4 КАРТ. Текст, зураг солих бол зөвхөн энэ жагсаалтыг засна —
+// доорх HTML хэсэг жагсаалтын мөр бүрээр нэг карт автоматаар үүсгэнэ.
+const services = [
+  {
+    title: "Хоолны сургалт",
+    en: "COOKING CLASS",
+    text: "Үндэстний гурван хоолыг тогоочийн заавраар өөрийн гараар хийж, хамтдаа амтална.",
+    meta: "12–14 хүн · 3 цаг орчим",
+    image: "/images/studio-official-8.jpg",
+  },
+  {
+    title: "Амттаны сургалт",
+    en: "PASTRY CLASS",
+    text: "Эклер, шу, бялуу — нарийн амттаны арга техникийг мэргэжлийн кондитерээс суралцана.",
+    meta: "12–14 хүн · 3 цаг орчим",
+    image: "/images/studio-official-7.jpg",
+  },
+  {
+    title: "Хаалттай эвент",
+    en: "PRIVATE EVENT",
+    text: "Төрсөн өдөр, баяр ёслол, тэмдэглэлт өдрөө студид өөрийн ширээгээ засаж тэмдэглээрэй.",
+    meta: "10–20 хүн",
+    image: "/images/studio-official-3.jpg",
+  },
+  {
+    title: "Хамт олны арга хэмжээ",
+    en: "TEAM BUILDING",
+    text: "Багаараа хоол хийж, хамтран ажиллаж, нэгэн оройг дурсамжтай өнгөрүүлнэ.",
+    meta: "10–20 хүн",
+    image: "/images/studio-official-1.jpg",
+  },
+];
+
+// СЛАЙДЕРЫН АНГИУД (chef постеруудаас). Шинэ анги нэмэх бол энд нэг блок нэмнэ.
+// image = том зураг (одоогоор постер), sideImage = баруун талын жижиг зураг.
+// Зургуудыг дараа нь солихдоо зөвхөн эдгээр замыг өөрчилнө.
+const classes = [
+  {
+    date: "5-р сарын 31 · 12:00–15:00",
+    title: "Испани & Мексик",
+    text: "Далайн хоолны паэлья, халуун ногоотой үхрийн махтай энчилада, уламжлалт флан амттан — гурван хоолыг ахлах тогоочийн заавраар өөрийн гараар бэлтгэнэ.",
+    menu: ["Seafood Paella", "Chipotle Beef Enchiladas", "Flan Mexicano"],
+    chef: "Ахлах тогооч Болдбаатар",
+    chefNote: "Paul Bakery Mongolia",
+    image: "/images/chef1.PNG",
+    sideImage: "/images/studio-official-8.jpg",
+  },
+  {
+    date: "6-р сарын 1 · 12:00–15:00",
+    title: "Францын амттан",
+    text: "Хүүхдийн баярт зориулсан амттаны анги. Эклер, жимстэй мини шу, Парис-Брест бялууг кондитерийн нарийн арга техникээр хийж сурна.",
+    menu: ["Éclair Pops", "Mini Fruit Choux", "Paris-Brest"],
+    chef: "Дэгиймаа",
+    chefNote: "Mon Éclair-ийн үүсгэн байгуулагч",
+    image: "/images/chef2.PNG",
+    sideImage: "/images/studio-official-7.jpg",
+  },
+  {
+    date: "4-р сарын 25 · 12:00–15:00",
+    title: "Тайланд",
+    text: "Исгэлэн халуун Том ям шөл, Пад тай гоймон, манготой мөсөн амттан — Тайландын гудамжны амтыг студидээ.",
+    menu: ["Tom Yum Soup", "Pad Thai", "Mango Shaved Ice"],
+    chef: "Тогооч Мая",
+    chefNote: "Roots pop-up house-ийн үүсгэн байгуулагч",
+    image: "/images/chef3.PNG",
+    sideImage: "/images/studio-official-5.jpg",
+  },
+];
+
+// ТОГООЧ НАР (мэдээллийг Kitchen Studio-ийн Instagram постуудаас авсан).
+// image: null = зураг хараахан байхгүй → нэрийн эхний үсэгтэй түр загвар харагдана.
+// Жинхэнэ зураг ирэхэд image: "/images/chefs/chef-....jpg" гэж бичнэ.
+const chefs = [
+  {
+    name: "Болдбаатар",
+    nickname: "Chef B",
+    role: "Paul Bakery Mongolia · Ерөнхий тогооч",
+    bio: "Америкийн Culinary Institute-ийг төгссөн. Нью-Йоркийн Delmonico's Steak House-д sous chef-ээр ажиллаж байсан.",
+    focus: "Испани · Мексик",
+    teaches: ["Shrimp & Avocado Tostada", "Saffron Chicken, Chorizo & Shrimp Rice", "Churros"],
+    image: "/images/chefs/chef-boldbaatar.jpg" as string | null,
+  },
+  {
+    name: "Мая",
+    nickname: "Chef Maya",
+    role: "Roots · Хамтран үүсгэн байгуулагч",
+    bio: "АНУ-д Culinary Arts мэргэжлээр төгсөж, Испанийн Сан-Себастьян хотод мэргэжлээрээ ажиллаж байсан.",
+    focus: "Даршилгаа · Тайланд · Веган",
+    teaches: ["Sauerkraut", "Dill Pickled Cucumber", "Tom Yum Soup", "Pad Thai"],
+    image: "/images/chefs/chef-maya.jpg" as string | null,
+  },
+  {
+    name: "Дэгиймаа",
+    nickname: "Mon éclair",
+    role: "Mon éclair · Үүсгэн байгуулагч, технологич",
+    bio: "Францын сонгодог амттан — эклер, cream puff, Paris-Brest-ийн нарийн техникийг заадаг.",
+    focus: "Францын амттан",
+    teaches: ["Classic French Éclair", "Cream Puffs", "Paris-Brest"],
+    image: "/images/chefs/chef-degiimaa.jpg" as string | null,
+  },
+  {
+    name: "Халиуна",
+    nickname: "Pastry Chef",
+    role: "Kissaten · Пастри шеф",
+    bio: "Японы Осака хотод Confectionery Art чиглэлээр суралцаж, Миланд пастри шефээр ажиллаж байсан.",
+    focus: "Бэйкери · Амттан",
+    teaches: ["Curry Bread", "Churros", "Salt Bread"],
+    image: null as string | null,
+  },
+  {
+    name: "Габриэл",
+    nickname: "Fermentalist",
+    role: "Амьд исгэлтийн багш",
+    bio: "Комбуча болон ферментжүүлсэн хүнс, ундааны чиглэлээр бие даан судалж, туршлагаа хуваалцдаг.",
+    focus: "Комбуча · Исгэлт",
+    teaches: ["Kombucha", "SCOBY", "Амьд исгэлт"],
+    image: null as string | null,
+  },
+];
+
+// СУРГАЛТ ХЭРХЭН ЯВАГДДАГ ВЭ — 4 алхам (мэдээллийг Instagram постуудаас).
+const steps = [
+  {
+    title: "Ангиа сонгох",
+    text: "Долоо хоног бүр шинэ жор, шинэ тогооч. Instagram хуудсанд зарлагдсан ангиудаас сонирхсон цэс, тогоочоо сонгоорой.",
+    image: "/images/studio-official-4.jpg",
+  },
+  {
+    title: "Бүртгүүлэх",
+    text: "+976 8880 8468 утсаар (09:00–20:00) эсвэл Instagram DM-ээр бүртгүүлнэ. Нэг ангид 12–14 хүн суралцана.",
+    image: "/images/studio-official-1.jpg",
+  },
+  {
+    title: "Өөрийн гараар хийх",
+    text: "Мэргэжлийн гал тогоонд тогоочийн зааварчилгаан дор хоол бүрийн техник, орцын зохицлыг суралцана. Орц, хэрэгсэл бүгд бэлэн.",
+    image: "/images/studio-official-5.jpg",
+  },
+  {
+    title: "Хамтдаа амтлах",
+    text: "Өөрийн хийсэн зоогоо халуун дулаан уур амьсгалд хамтдаа амтална. Амттаны ангид хийсэн амттнаа гэртээ авч харина.",
+    image: "/images/studio-official-6.jpg",
+  },
+];
+
+// ЗУРГИЙН ЦОМОГ — сургалтын агшин, хүмүүс, хоол. (Орчны зургууд "Таны урлах орчин" хэсэгт.)
+// ratio = зургийн хэлбэр. studio-official-9.jpg нь лого тул оруулаагүй.
+const gallery = [
+  { src: "/images/studio-official-1.jpg", caption: "Тогоочийн заавраар", ratio: "aspect-[4/5]" },
+  { src: "/images/studio-official-7.jpg", caption: "Амттаны урлал", ratio: "aspect-[3/4]" },
+  { src: "/images/studio-official-8.jpg", caption: "Гараар зуурах", ratio: "aspect-square" },
+  { src: "/images/studio-official-6.jpg", caption: "Хамтдаа зооглох", ratio: "aspect-square" },
+  { src: "/images/studio-official-5.jpg", caption: "Инээд хөөртэй өдөр", ratio: "aspect-[4/5]" },
+  { src: "/images/studio-official-3.jpg", caption: "Тухтай ширээ", ratio: "aspect-[3/4]" },
+];
+
+// ТАНЫ УРЛАХ ОРЧИН — том зураг + доор нь жижиг зургууд (дарахад том зураг солигдоно).
+// render: true = 3D интерьер дүрслэл (бодит зураг биш) гэдгийг тэмдэглэнэ.
+const spaces = [
+  { src: "/images/studio-official-2.jpg", title: "Мэргэжлийн гал тогоо", text: "Орчин үеийн мэргэжлийн тоног төхөөрөмжтэй, стандартын дагуу тохижуулсан сургалтын гал тогоо.", render: false },
+  { src: "/images/studio-official-4.jpg", title: "Ажлын ширээ", text: "Оролцогч бүр өөрийн байртай — 12–14 хүн нэг дор хоол хийх ажлын ширээ.", render: false },
+  { src: "/images/studio-1.png", title: "Зочлох танхим", text: "Хийсэн хоолоо хамтдаа амтлах, хаалттай эвентэд 10–20 хүн хүлээн авах орон зай.", render: true },
+  { src: "/images/studio-2.png", title: "Студийн дотоод", text: "Дулаан өнгө, байгалийн мод, зөөлөн гэрэлтүүлэг — тухтай, урам өгөх орчин.", render: true },
+];
+
+// GOOGLE ГАЗРЫН ЗУРАГ. Одоогоор "Tulga Center Ulaanbaatar" гэж хайсан үр дүнг харуулна.
+// Яг зөв цэгийг тавих бол: Google Maps дээр Kitchen Studio-г олоод → Share → Embed a map →
+// COPY HTML дарж, гарах кодын src="..." доторх хаягийг энд хуулна.
+const mapSrc = "https://www.google.com/maps?q=Tulga+Center,+Ulaanbaatar&output=embed";
+
+// Загвар солих товчнууд. Шинэ загвар нэмэх бол энд нэг мөр нэмнэ.
+const themeButtons: { id: ThemeName; label: string }[] = [
+  { id: "classic", label: "STUDIO" },
+  { id: "tomato", label: "TOMATO" },
+  { id: "velaa", label: "VELAA" },
+  { id: "haus", label: "HAUS" },
+];
+
+export default function HausDesign({ theme, onThemeChange }: Props) {
+  // Слайдерын аль анги харагдаж байгааг санах тоо (0 = эхнийх).
+  const [current, setCurrent] = useState(0);
+  const total = classes.length;
+  // % (үлдэгдэл) = сүүлийнхээс цааш дарахад эхнийх рүү, эхнийхээс өмнө дарахад сүүлийнх рүү эргэнэ.
+  const next = () => setCurrent((current + 1) % total);
+  const prev = () => setCurrent((current - 1 + total) % total);
+  const item = classes[current];
+
+  // "Явц" хэсгийн аль алхам харагдаж байгааг санах тоо — слайдертай ижил зарчим.
+  const [step, setStep] = useState(0);
+  const stepItem = steps[step];
+
+  // "Таны урлах орчин" хэсгийн аль зураг томоор харагдаж байгааг санах тоо.
+  const [space, setSpace] = useState(0);
+  const spaceItem = spaces[space];
+
+  // "Тогооч нар" хэсэгт аль тогооч томоор харагдаж байгааг санах тоо.
+  const [chefIndex, setChefIndex] = useState(0);
+  const chef = chefs[chefIndex];
+  const nextChef = () => setChefIndex((chefIndex + 1) % chefs.length);
+  const prevChef = () => setChefIndex((chefIndex - 1 + chefs.length) % chefs.length);
+
+  return (
+    <div className="min-h-screen bg-[#f4efe8] text-[#2b2119]">
+      {/* ───────── 1. ДЭЭД ЦЭС ─────────
+          absolute = зурган дээр хөвж байрлана. Доороо нимгэн цагаан зураастай. */}
+      <header className="absolute inset-x-0 top-0 z-30 border-b border-white/30 text-white">
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-4 sm:px-10">
+          {/* ЛОГО (logo-test хуудасны B хувилбар):
+              "Kitchen" — гар бичмэл script фонт, "STUDIO" — жижиг, өргөн зайтай том үсэг,
+              хоёр талдаа нимгэн зураас. flex-col = хоёр мөрийг дээш доош байрлуулна. */}
+          <a href="#haus-home" aria-label="Kitchen Studio нүүр" className="inline-flex flex-col items-center leading-none">
+            <span className={script.className + " text-[34px]"}>Kitchen</span>
+            <span className={forum.className + " -mt-1 flex items-center gap-2 text-[11px] tracking-[0.5em]"}>
+              <span className="h-px w-5 bg-white/70" />
+              STUDIO
+              <span className="h-px w-5 bg-white/70" />
+            </span>
+          </a>
+
+          {/* Цэс: том дэлгэцэнд л харагдана (lg:flex) */}
+          <nav className="hidden items-center gap-8 text-[11px] font-medium tracking-[0.16em] lg:flex">
+            <a href="#haus-services" className="hover:text-[#e6d5bf]">СУРГАЛТ</a>
+            <a href="#haus-classes" className="hover:text-[#e6d5bf]">АНГИУД</a>
+            <a href="#haus-space" className="hover:text-[#e6d5bf]">ОРЧИН</a>
+            <a href="#haus-chefs" className="hover:text-[#e6d5bf]">ТОГООЧ НАР</a>
+            <a href="#haus-approach" className="hover:text-[#e6d5bf]">ЯВЦ</a>
+            <a href="#haus-journal" className="hover:text-[#e6d5bf]">ЗУРГИЙН ЦОМОГ</a>
+          </nav>
+
+          {/* Загвар солих товчнууд. map() = жагсаалтын элемент бүрээр нэг товч үүсгэнэ. */}
+          <div role="group" aria-label="Загвар сонгох" className="flex border border-white/40 text-[9px] font-semibold tracking-[0.08em] sm:text-[10px]">
+            {themeButtons.map((button) => (
+              <button
+                key={button.id}
+                type="button"
+                aria-pressed={theme === button.id}
+                onClick={() => onThemeChange(button.id)}
+                className={
+                  "px-2.5 py-2 transition-colors sm:px-3 " +
+                  (theme === button.id ? "bg-white text-[#2b2119]" : "hover:bg-white/15")
+                }
+              >
+                {button.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {/* ───────── 2. НҮҮР ХЭСЭГ (HERO) ───────── */}
+      <section id="haus-home" className="relative isolate flex min-h-[100svh] items-end overflow-hidden bg-[#2b2119] text-white">
+        {/* Арын зураг. saturate/brightness = өнгийг бүдгэрүүлж, загварын нам гүм уур амьсгалд ойртуулна. */}
+        <Image
+          src="/images/studio-hero.png"
+          alt="Kitchen Studio-ийн гал тогоо"
+          fill
+          priority
+          sizes="100vw"
+          className="-z-20 object-cover object-center [filter:saturate(0.6)_brightness(0.85)]"
+        />
+        {/* Хүрэн өнгийн бараан бүрхүүл — текстийг уншигдахуйц болгоно */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#2b2119]/55 via-[#2b2119]/35 to-[#2b2119]/70" />
+
+        <div className="mx-auto w-full max-w-[1400px] px-5 pb-14 pt-36 sm:px-10 sm:pb-20">
+          {/* Гарчиг: 3 мөр, мөр бүр өөр өөр зайнаас эхэлнэ (md:pl-[..]) — загварын шатлалтай байрлал */}
+          <h1 className={forum.className + " uppercase leading-[0.95] tracking-[-0.01em] text-[length:clamp(3.1rem,11vw,9.5rem)]"}>
+            <span className="block">Taste.</span>
+            <span className="block md:pl-[22%]">
+              <span className={script.className + " normal-case text-[1.12em] leading-[0.5]"}>C</span>raft.
+            </span>
+            <span className="block md:pl-[22%]">Gather.</span>
+          </h1>
+
+          {/* Тайлбар ба холбоос: том дэлгэцэнд гарчгийн доор баруун тийш шилжинэ */}
+          {/* Тайлбар бичиг — "томруулах" гэхдээ зөвхөн үсгийн хэмжээгээр биш:
+              1) Жижиг тэмдэглэгээ (eyebrow) — дээр нь нимгэн зураастай "KITCHEN STUDIO".
+              2) Энгийн фонтын оронд гарчгийн Forum serif фонт — илүү "ном" шиг, ганган.
+              3) Мөр хоорондын зай ихтэй, өргөн нь хязгаартай — амархан уншигдана.
+              4) Гол санаа "өөрийн гараар"-ыг цайвар шаргал өнгөөр онцолсон. */}
+          <div className="mt-10 max-w-[30rem] md:ml-[22%]">
+            <p className="flex items-center gap-3 text-[10px] font-semibold tracking-[0.3em] text-white/70">
+              <span className="h-px w-8 bg-white/60" /> KITCHEN STUDIO
+            </p>
+            <p className={forum.className + " mt-4 text-[length:clamp(1.3rem,2.2vw,1.75rem)] leading-[1.4] text-white/90"}>
+              Хоолыг амталж, мэдэрч, <span className="text-[#ecd9bf]">өөрийн гараар</span> хийх дуртай хэн
+              бүхний зорин ирэх урлан.
+            </p>
+            <a
+              href="#haus-services"
+              className="mt-8 flex max-w-[300px] items-center justify-between border-b border-white/70 pb-2 text-[11px] font-semibold tracking-[0.16em]"
+            >
+              СУРГАЛТТАЙ ТАНИЛЦАХ <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── 3. ҮЙЛЧИЛГЭЭ ─────────
+          Бараан зурган дэвсгэр. Том дэлгэцэнд: зүүн талд гарчиг, баруун талд 2×2 карт.
+          Утсанд: гарчиг дээр, картууд хуруугаар хажуу тийш гүйлгэдэг эгнээ. */}
+      <section id="haus-services" className="relative isolate overflow-hidden bg-[#2b2119] text-white">
+        <Image
+          src="/images/studio-3.png"
+          alt=""
+          fill
+          sizes="100vw"
+          className="-z-20 object-cover [filter:saturate(0.5)_brightness(0.6)]"
+        />
+        <div className="absolute inset-0 -z-10 bg-[#2b2119]/70" />
+
+        <div className="mx-auto grid max-w-[1400px] gap-12 px-5 py-20 sm:px-10 sm:py-28 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          {/* Зүүн тал: гарчиг, тайлбар, холбоос. lg:sticky = гүйлгэх үед гарчиг байрандаа үлдэнэ */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="text-[10px] font-semibold tracking-[0.3em] text-white/70">ҮЙЛЧИЛГЭЭ</p>
+            <h2 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.6rem,5vw,4.5rem)]"}>
+              Experiences
+              <br />
+              to <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>R</span>emember
+            </h2>
+            <p className="mt-6 max-w-sm text-[14px] leading-7 text-white/80">
+              Бид хоолны сургалтаас илүүг санал болгодог — өөрийн гараар хийж, амтлаж, хамтдаа баярлах
+              дурсамжтай туршлага.
+            </p>
+            <a
+              href="tel:+97688808468"
+              className="mt-8 flex max-w-[260px] items-center justify-between border-b border-white/70 pb-2 text-[11px] font-semibold tracking-[0.16em]"
+            >
+              ХОЛБОГДОХ · 8880 8468 <span aria-hidden="true">→</span>
+            </a>
+          </div>
+
+          {/* Баруун тал: картууд.
+              Утсанд: flex + overflow-x-auto + snap = хажуу тийш гүйлгэхэд карт бүр байрандаа "тогтоно".
+              md-ээс том дэлгэцэнд: 2 баганатай grid, 2 ба 4-р карт доошоо шилжиж шатлал үүсгэнэ. */}
+          <div className="-mx-5 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 md:mx-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:px-0 md:pb-12">
+            {services.map((service, index) => (
+              <article
+                key={service.en}
+                className={
+                  "flex w-[78%] shrink-0 snap-start flex-col bg-[#f8f4ee] p-4 text-[#2b2119] sm:w-[55%] md:w-auto " +
+                  (index % 2 === 1 ? "md:translate-y-12" : "")
+                }
+              >
+                <p className="text-[10px] font-semibold tracking-[0.2em] text-[#8a6f55]">0{index + 1}</p>
+                <div className="relative mt-3 aspect-[4/3] overflow-hidden">
+                  <Image
+                    src={service.image}
+                    alt={service.title}
+                    fill
+                    sizes="(max-width: 768px) 78vw, 30vw"
+                    className="object-cover [filter:saturate(0.8)]"
+                  />
+                </div>
+                <h3 className={forum.className + " mt-5 text-[22px] uppercase leading-tight"}>{service.title}</h3>
+                <p className="mt-1 text-[9px] font-semibold tracking-[0.25em] text-[#8a6f55]">{service.en}</p>
+                <p className="mt-3 flex-1 text-[13px] leading-6 text-[#5e5047]">{service.text}</p>
+                <div className="mt-5 flex items-center justify-between border-t border-[#2b2119]/15 pt-3 text-[11px] text-[#6d5f53]">
+                  <span>{service.meta}</span>
+                  <span aria-hidden="true">→</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── 4. АНГИУД (СЛАЙДЕР) ─────────
+          Том дэлгэцэнд 3 багана: том зураг | тайлбар | жижиг зураг.
+          Утсанд: дээрээс доош дараалан. Сумаар солигдоно. */}
+      <section id="haus-classes" className="bg-[#fbf9f6] px-5 py-20 sm:px-10 sm:py-28">
+        {/* hausFade = анги солигдох үед зөөлөн гарч ирэх хөдөлгөөн */}
+        <style>{`@keyframes hausFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }`}</style>
+
+        <div className="mx-auto max-w-[1300px]">
+          <div className="text-center">
+            <p className="text-[10px] font-semibold tracking-[0.3em] text-[#8a6f55]">БОЛЖ ӨНГӨРСӨН АНГИУД</p>
+            <h2 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.3rem,5vw,4.2rem)]"}>
+              Moments that <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>E</span>ndure
+            </h2>
+          </div>
+
+          {/* key={current} = анги солигдох бүрт энэ хэсгийг шинээр зурж, hausFade хөдөлгөөнийг дахин тоглуулна */}
+          <div
+            key={current}
+            className="mt-12 grid gap-8 [animation:hausFade_0.6s_ease] lg:grid-cols-[1.15fr_1fr_0.55fr] lg:gap-10"
+          >
+            {/* Том зураг. aspect-[745/590] = постерын хэмжээний харьцаа, тиймээс текст нь тасрахгүй */}
+            <div className="relative aspect-[745/590] overflow-hidden bg-[#e9e1d6]">
+              <Image src={item.image} alt={item.title + " анги"} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" />
+            </div>
+
+            {/* Тайлбар */}
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between text-[11px] text-[#6d5f53]">
+                <span>{item.date}</span>
+                {/* padStart(2, "0") = 1 → "01" болгоно */}
+                <span className="tracking-[0.15em]">
+                  {String(current + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+                </span>
+              </div>
+              <h3 className={forum.className + " mt-8 text-[34px] uppercase leading-tight"}>{item.title}</h3>
+              <p className="mt-4 text-[14px] leading-7 text-[#5e5047]">{item.text}</p>
+
+              <ul className="mt-6 border-t border-[#2b2119]/15">
+                {item.menu.map((dish) => (
+                  <li key={dish} className={forum.className + " border-b border-[#2b2119]/15 py-2.5 text-[15px] tracking-[0.06em]"}>
+                    {dish}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto flex items-end justify-between gap-6 pt-8">
+                <p className="text-[12px] leading-5 text-[#6d5f53]">
+                  <span className="font-semibold text-[#2b2119]">{item.chef}</span>
+                  <br />
+                  {item.chefNote}
+                </p>
+                {/* Сумнууд */}
+                <div className="flex shrink-0 gap-2">
+                  <button type="button" onClick={prev} aria-label="Өмнөх анги" className="grid h-11 w-11 place-items-center rounded-full border border-[#2b2119]/25 transition-colors hover:bg-[#2b2119] hover:text-white">
+                    ←
+                  </button>
+                  <button type="button" onClick={next} aria-label="Дараагийн анги" className="grid h-11 w-11 place-items-center rounded-full border border-[#2b2119]/25 transition-colors hover:bg-[#2b2119] hover:text-white">
+                    →
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Жижиг зураг — зөвхөн том дэлгэцэнд (hidden lg:block) */}
+            <div className="hidden lg:block">
+              <div className="relative aspect-[3/4] overflow-hidden">
+                <Image src={item.sideImage} alt="" fill sizes="15vw" className="object-cover [filter:saturate(0.8)]" />
+              </div>
+              <p className="mt-4 text-[12px] leading-5 text-[#6d5f53]">
+                Дараагийн ангийн өдөр, цэсийг Instagram хуудсаар зарлана.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── ТАНЫ УРЛАХ ОРЧИН ─────────
+          Зүүн талд том зураг, баруун талд тайлбар + онцлог жагсаалт.
+          Доор нь жижиг зургууд — дарахад том зураг ба тайлбар солигдоно. */}
+      <section id="haus-space" className="bg-[#2b2119] px-5 py-20 text-white sm:px-10 sm:py-28">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-end">
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.3em] text-white/60">ТАНЫ УРЛАХ ОРЧИН</p>
+              <h2 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.3rem,5vw,4.2rem)]"}>
+                A <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>S</span>pace
+                <br />
+                to create
+              </h2>
+            </div>
+            <p className="max-w-md text-[14px] leading-7 text-white/75 lg:justify-self-end">
+              Тулга төвийн 1 давхарт байрлах мэргэжлийн сургалтын гал тогоо. Бүх орц, хэрэгсэл, тоног төхөөрөмж бэлэн —
+              танд зөвхөн хоол хийх хүсэл л хэрэгтэй.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
+            {/* Том зураг. key={space} = зураг солигдох бүрт зөөлөн гарч ирнэ */}
+            <div key={space} className="relative aspect-[4/3] overflow-hidden bg-black/20 [animation:hausFade_0.6s_ease]">
+              <Image src={spaceItem.src} alt={spaceItem.title} fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover [filter:saturate(0.8)]" />
+              {spaceItem.render && (
+                <span className="absolute left-4 top-4 bg-black/45 px-2.5 py-1 text-[9px] font-semibold tracking-[0.2em] text-white/90">
+                  3D ДҮРСЛЭЛ
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <p className="text-[11px] tracking-[0.15em] text-white/60">
+                {String(space + 1).padStart(2, "0")}/{String(spaces.length).padStart(2, "0")}
+              </p>
+              <h3 className={forum.className + " mt-4 text-[30px] uppercase leading-tight"}>{spaceItem.title}</h3>
+              <p className="mt-3 text-[14px] leading-7 text-white/75">{spaceItem.text}</p>
+
+              {/* Студийн онцлогууд — тоо, баримтаар */}
+              <dl className="mt-8 grid grid-cols-2 gap-px bg-white/15">
+                {[
+                  ["12–14", "хүн нэг ангид"],
+                  ["10–20", "хүний хаалттай эвент"],
+                  ["3 цаг", "орчим нэг сургалт"],
+                  ["2022", "оноос хойш"],
+                ].map(([value, label]) => (
+                  <div key={label} className="bg-[#2b2119] p-4">
+                    <dt className={forum.className + " text-[26px] leading-none"}>{value}</dt>
+                    <dd className="mt-2 text-[11px] text-white/60">{label}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+
+          {/* Жижиг зургууд. Идэвхтэй нь бүтэн, бусад нь бүдэг. */}
+          <div className="mt-6 grid grid-cols-4 gap-2 sm:gap-4 lg:w-[60%]">
+            {spaces.map((s, index) => (
+              <button
+                key={s.src}
+                type="button"
+                onClick={() => setSpace(index)}
+                aria-label={s.title + " зургийг харах"}
+                aria-pressed={space === index}
+                className={
+                  "relative aspect-square overflow-hidden transition-opacity " +
+                  (space === index ? "opacity-100 outline outline-1 outline-offset-2 outline-white/80" : "opacity-50 hover:opacity-80")
+                }
+              >
+                <Image src={s.src} alt="" fill sizes="15vw" className="object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── 5. ТОГООЧ НАР ─────────
+          Том дэлгэцэнд 5 багана, утсанд хажуу тийш гүйлгэдэг эгнээ.
+          Зургууд хар цагаан; хулганаа дээр нь аваачихад (hover) өнгөтэй болно. */}
+      <section id="haus-chefs" className="bg-[#f4efe8] px-5 py-20 sm:px-10 sm:py-28">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-end">
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.3em] text-[#8a6f55]">ТОГООЧ НАР</p>
+              <h2 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.3rem,5vw,4.2rem)]"}>
+                The <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>H</span>ands
+                <br />
+                behind the taste
+              </h2>
+            </div>
+            <p className="max-w-md text-[14px] leading-7 text-[#5e5047] lg:justify-self-end">
+              Долоо хоног бүр өөр тогооч, өөр хоол, шинэ мэдлэг. Олон улсад суралцаж, мэргэжлийн гал тогоонд ажилласан
+              тогооч нар туршлагаа танай ширээнд хуваалцдаг.
+            </p>
+          </div>
+
+          {/* НЭГ ТОГООЧ ТОМООР: зүүн талд хөрөг, баруун талд танилцуулга.
+              key={chefIndex} = тогооч солигдох бүрт зөөлөн гарч ирнэ (hausFade). */}
+          <div key={chefIndex} className="mt-12 grid gap-8 [animation:hausFade_0.6s_ease] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center lg:gap-16">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-[420px] overflow-hidden bg-[#e3d9cc] md:mx-0">
+              {chef.image ? (
+                <Image src={chef.image} alt={chef.name} fill sizes="(max-width: 768px) 90vw, 420px" className="object-cover grayscale" />
+              ) : (
+                // Зураггүй үед: нэрийн эхний үсэг том Forum фонтоор
+                <div className="grid h-full place-items-center">
+                  <span className={forum.className + " text-[140px] leading-none text-[#2b2119]/20"}>{chef.name[0]}</span>
+                  <span className="absolute bottom-5 text-[9px] font-semibold tracking-[0.25em] text-[#8a6f55]">ЗУРАГ УДАХГҮЙ</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-[11px] text-[#6d5f53]">
+                <span className="font-semibold tracking-[0.25em] text-[#8a6f55]">{chef.nickname.toUpperCase()}</span>
+                <span className="tracking-[0.15em]">
+                  {String(chefIndex + 1).padStart(2, "0")}/{String(chefs.length).padStart(2, "0")}
+                </span>
+              </div>
+              <h3 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.4rem,5vw,4rem)]"}>{chef.name}</h3>
+              <p className="mt-3 text-[13px] text-[#6d5f53]">{chef.role}</p>
+              <p className="mt-6 max-w-lg text-[15px] leading-8 text-[#3f342c]">{chef.bio}</p>
+
+              <p className="mt-8 text-[10px] font-semibold tracking-[0.25em] text-[#8a6f55]">ЗААДАГ ХИЧЭЭЛ · {chef.focus.toUpperCase()}</p>
+              <ul className="mt-3 max-w-lg border-t border-[#2b2119]/15">
+                {chef.teaches.map((dish) => (
+                  <li key={dish} className={forum.className + " border-b border-[#2b2119]/15 py-2.5 text-[15px] tracking-[0.06em]"}>
+                    {dish}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8 flex gap-2">
+                <button type="button" onClick={prevChef} aria-label="Өмнөх тогооч" className="grid h-11 w-11 place-items-center rounded-full border border-[#2b2119]/25 transition-colors hover:bg-[#2b2119] hover:text-white">
+                  ←
+                </button>
+                <button type="button" onClick={nextChef} aria-label="Дараагийн тогооч" className="grid h-11 w-11 place-items-center rounded-full border border-[#2b2119]/25 transition-colors hover:bg-[#2b2119] hover:text-white">
+                  →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Тогооч сонгох жижиг зургууд — 5 тогооч нэг эгнээнд. Идэвхтэй нь бүтэн өнгөтэй, доороо зураастай. */}
+          <div className="mt-12 grid grid-cols-5 gap-2 sm:gap-4 md:max-w-[640px]">
+            {chefs.map((c, index) => (
+              <button
+                key={c.name}
+                type="button"
+                onClick={() => setChefIndex(index)}
+                aria-pressed={chefIndex === index}
+                className={"text-left transition-opacity " + (chefIndex === index ? "opacity-100" : "opacity-45 hover:opacity-80")}
+              >
+                <span className="relative block aspect-square overflow-hidden bg-[#e3d9cc]">
+                  {c.image ? (
+                    <Image src={c.image} alt="" fill sizes="120px" className="object-cover grayscale" />
+                  ) : (
+                    <span className={forum.className + " grid h-full place-items-center text-[28px] text-[#2b2119]/30"}>{c.name[0]}</span>
+                  )}
+                </span>
+                <span className={"mt-2 block border-t pt-2 text-[10px] leading-tight sm:text-[11px] " + (chefIndex === index ? "border-[#2b2119]" : "border-transparent")}>
+                  {c.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── 6. ЯВЦ — СУРГАЛТ ХЭРХЭН ЯВАГДДАГ ВЭ ─────────
+          Бараан арын зураг, голд нэг цагаан карт. Сум эсвэл 01–04 товчоор алхам солино.
+          Компьютер дээр картын хоёр талд жижиг бичиг (загварын "Design in steps / Scroll to explore" шиг). */}
+      <section id="haus-approach" className="relative isolate overflow-hidden bg-[#2b2119] px-5 py-20 text-white sm:px-10 sm:py-28">
+        <Image
+          src="/images/studio-official-3.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          className="-z-20 object-cover [filter:saturate(0.45)_brightness(0.55)]"
+        />
+        <div className="absolute inset-0 -z-10 bg-[#2b2119]/60" />
+
+        <div className="mx-auto max-w-[1300px] text-center">
+          <p className="text-[10px] font-semibold tracking-[0.3em] text-white/70">ЯВЦ</p>
+          <h2 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.3rem,5vw,4.2rem)]"}>
+            <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>H</span>ow a class unfolds
+          </h2>
+        </div>
+
+        <div className="mx-auto mt-12 grid max-w-[1300px] items-center gap-8 lg:grid-cols-[1fr_auto_1fr]">
+          {/* Зүүн жижиг бичиг — зөвхөн том дэлгэцэнд */}
+          <p className="hidden text-[12px] text-white/70 lg:block">Дөрвөн алхам · 3 цаг орчим</p>
+
+          {/* Голын карт. key={step} = алхам солигдох бүрт hausFade хөдөлгөөн дахин тоглоно */}
+          <article
+            key={step}
+            className="mx-auto w-full max-w-[400px] bg-[#fbf9f6] p-5 text-center text-[#2b2119] [animation:hausFade_0.6s_ease]"
+          >
+            <p className="text-[10px] font-semibold tracking-[0.2em] text-[#8a6f55]">
+              {String(step + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}
+            </p>
+            <div className="relative mt-4 aspect-[4/3] overflow-hidden">
+              <Image src={stepItem.image} alt={stepItem.title} fill sizes="400px" className="object-cover [filter:saturate(0.8)]" />
+            </div>
+            <h3 className={forum.className + " mt-6 text-[26px] uppercase leading-tight"}>{stepItem.title}</h3>
+            <p className="mx-auto mt-3 max-w-[300px] text-[13px] leading-6 text-[#5e5047]">{stepItem.text}</p>
+
+            {/* Сумнууд. disabled = эхний алхам дээр "өмнөх", сүүлийн дээр "дараах" товч идэвхгүй */}
+            <div className="mt-6 flex justify-center gap-2">
+              <button type="button" onClick={() => setStep(step - 1)} disabled={step === 0} aria-label="Өмнөх алхам" className="grid h-10 w-10 place-items-center rounded-full border border-[#2b2119]/25 transition-colors hover:bg-[#2b2119] hover:text-white disabled:pointer-events-none disabled:opacity-30">
+                ←
+              </button>
+              <button type="button" onClick={() => setStep(step + 1)} disabled={step === steps.length - 1} aria-label="Дараагийн алхам" className="grid h-10 w-10 place-items-center rounded-full border border-[#2b2119]/25 transition-colors hover:bg-[#2b2119] hover:text-white disabled:pointer-events-none disabled:opacity-30">
+                →
+              </button>
+            </div>
+          </article>
+
+          {/* Баруун жижиг бичиг */}
+          <p className="hidden text-right text-[12px] text-white/70 lg:block">Алхам бүрийг товчоор харна уу →</p>
+        </div>
+
+        {/* 01–04 товчнууд: алхмын нэрээр шууд үсрэх. Идэвхтэй нь цагаан зураастай. */}
+        <div className="mx-auto mt-10 grid max-w-[900px] grid-cols-4 gap-2 sm:gap-4">
+          {steps.map((s, index) => (
+            <button
+              key={s.title}
+              type="button"
+              onClick={() => setStep(index)}
+              aria-pressed={step === index}
+              className={
+                "border-t pt-3 text-left transition-colors " +
+                (step === index ? "border-white text-white" : "border-white/25 text-white/50 hover:text-white/80")
+              }
+            >
+              <span className="block text-[10px] font-semibold tracking-[0.2em]">0{index + 1}</span>
+              <span className="mt-1 hidden text-[12px] sm:block">{s.title}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ───────── 7. ЗУРГИЙН ЦОМОГ ─────────
+          Загварын "Notes from the studio" шиг: өөр өөр хэлбэртэй зургууд, багана бүр өөр өндрөөс эхэлнэ.
+          Утсанд 2 багана, компьютерт 4 багана. */}
+      <section id="haus-journal" className="bg-[#fbf9f6] px-5 py-20 sm:px-10 sm:py-28">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="text-center">
+            <p className="text-[10px] font-semibold tracking-[0.3em] text-[#8a6f55]">ЗУРГИЙН ЦОМОГ</p>
+            <h2 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.3rem,5vw,4.2rem)]"}>
+              Notes from the <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>S</span>tudio
+            </h2>
+          </div>
+
+          <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-3 lg:gap-x-8">
+            {gallery.map((photo, index) => (
+              // Утсанд (2 багана): баруун багана доошоо шилжинэ.
+              // Компьютерт (3 багана): дунд багана доошоо шилжинэ.
+              <figure
+                key={photo.src}
+                className={
+                  (index % 2 === 1 ? "mt-10 " : "") +
+                  (index % 3 === 1 ? "lg:mt-16 " : "lg:mt-0 ")
+                }
+              >
+                <div className={"group relative overflow-hidden bg-[#e3d9cc] " + photo.ratio}>
+                  <Image
+                    src={photo.src}
+                    alt={photo.caption}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 33vw"
+                    className="object-cover [filter:saturate(0.75)] transition duration-700 group-hover:scale-[1.04]"
+                  />
+                </div>
+                <figcaption className={forum.className + " mt-3 text-[14px] uppercase tracking-[0.06em]"}>{photo.caption}</figcaption>
+              </figure>
+            ))}
+          </div>
+
+          <div className="mt-14 text-center">
+            <a
+              href="https://www.instagram.com/kitchenstudiomn/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-6 border-b border-[#2b2119]/60 pb-2 text-[11px] font-semibold tracking-[0.16em]"
+            >
+              INSTAGRAM-Д ИЛҮҮ ИХИЙГ ҮЗЭХ <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── БАЙРШИЛ — САЙТ ДОТОР ХАРАГДАХ GOOGLE ГАЗРЫН ЗУРАГ ─────────
+          <iframe> = өөр сайтын хуудсыг (энд Google Maps) манай хуудсан дотор "цонх" болгон харуулна.
+          Зочид газрын зургийг томруулж, чирж, шууд чиглэл авч болно. API түлхүүр шаардлагагүй.
+          Яг зөв байршлын кодыг Google Maps → Share → Embed a map хэсгээс авч mapSrc-д тавина. */}
+      <section id="haus-location" className="bg-[#f4efe8] px-5 py-20 sm:px-10 sm:py-24">
+        <div className="mx-auto grid max-w-[1400px] gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.3em] text-[#8a6f55]">БАЙРШИЛ</p>
+            <h2 className={forum.className + " mt-4 uppercase leading-[1] text-[length:clamp(2.3rem,5vw,4.2rem)]"}>
+              <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>F</span>ind us
+            </h2>
+            <p className="mt-6 text-[15px] leading-7 text-[#2b2119]">
+              Сүхбаатар дүүрэг, 9-р хороо,
+              <br />
+              Тулга төв, 1 давхар · Kitchen Studio
+            </p>
+            <p className="mt-3 text-[13px] leading-6 text-[#6d5f53]">Сургалтууд ихэвчлэн амралтын өдрүүдэд 12:00–15:00.</p>
+            <a
+              href="https://maps.google.com/?q=Tulga+Center+Ulaanbaatar"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-8 flex max-w-[260px] items-center justify-between border-b border-[#2b2119]/60 pb-2 text-[11px] font-semibold tracking-[0.16em]"
+            >
+              ЧИГЛЭЛ АВАХ <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          {/* grayscale = газрын зургийг саарал болгож загварын өнгөнд нийцүүлнэ; hover үед өнгөтэй болно */}
+          <div className="relative aspect-[4/3] overflow-hidden bg-[#e3d9cc] sm:aspect-[16/10]">
+            <iframe
+              src={mapSrc}
+              title="Kitchen Studio-ийн байршил — Google газрын зураг"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="absolute inset-0 h-full w-full border-0 grayscale-[0.85] transition duration-500 hover:grayscale-0"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── 8. ХӨЛ ХЭСЭГ (FOOTER) ─────────
+          Дээд хэсэг: урилга + товчнууд. Доод хэсэг: лого, хаяг, холбоо барих, сошиал. */}
+      <footer id="haus-contact" className="bg-[#2b2119] px-5 pb-10 pt-20 text-white sm:px-10 sm:pt-28">
+        <div className="mx-auto max-w-[1400px]">
+          {/* Урилга */}
+          <div className="border-b border-white/20 pb-16 text-center">
+            <p className="text-[10px] font-semibold tracking-[0.3em] text-white/60">ДОЛОО ХОНОГ БҮР ШИНЭ ЖОР, ШИНЭ АМТ, ШИНЭ ТУРШЛАГА</p>
+            <h2 className={forum.className + " mt-5 uppercase leading-[1] text-[length:clamp(2.5rem,6vw,5rem)]"}>
+              Let&apos;s <span className={script.className + " normal-case text-[1.15em] leading-[0.5]"}>C</span>ook together
+            </h2>
+            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <a href="tel:+97688808468" className="w-full max-w-[260px] bg-[#f4efe8] px-6 py-4 text-[11px] font-semibold tracking-[0.16em] text-[#2b2119] transition-colors hover:bg-white">
+                БҮРТГҮҮЛЭХ · 8880 8468
+              </a>
+              <a href="https://www.instagram.com/kitchenstudiomn/" target="_blank" rel="noreferrer" className="w-full max-w-[260px] border border-white/50 px-6 py-4 text-[11px] font-semibold tracking-[0.16em] transition-colors hover:bg-white/10">
+                INSTAGRAM DM ↗
+              </a>
+            </div>
+          </div>
+
+          {/* Мэдээллийн баганууд */}
+          <div className="grid gap-10 pt-14 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+            {/* Лого — дээд цэсний B хувилбартай ижил, арай том */}
+            <div>
+              <span className="inline-flex flex-col items-center leading-none">
+                <span className={script.className + " text-[46px]"}>Kitchen</span>
+                <span className={forum.className + " -mt-1 flex items-center gap-2 text-[13px] tracking-[0.5em]"}>
+                  <span className="h-px w-6 bg-white/70" />
+                  STUDIO
+                  <span className="h-px w-6 bg-white/70" />
+                </span>
+              </span>
+              <p className="mt-5 text-[12px] leading-6 text-white/60">
+                Амтыг урлаж, хоолыг бүтээх нь.
+                <br />
+                Улаанбаатар · Since 2022
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.25em] text-white/50">ХАЯГ</p>
+              <p className="mt-4 text-[14px] leading-6 text-white/85">
+                СБД, 9-р хороо,
+                <br />
+                Тулга төв, 1 давхар
+              </p>
+              <a href="https://maps.google.com/?q=Tulga+Center+Ulaanbaatar" target="_blank" rel="noreferrer" className="mt-3 inline-block border-b border-white/40 pb-0.5 text-[12px] text-white/70 hover:text-white">
+                Газрын зураг ↗
+              </a>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.25em] text-white/50">ХОЛБОО БАРИХ</p>
+              <a href="tel:+97688808468" className={forum.className + " mt-4 block text-[22px] hover:text-[#ecd9bf]"}>
+                +976 8880 8468
+              </a>
+              <p className="mt-1 text-[12px] text-white/60">Утсаар 09:00–20:00</p>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.25em] text-white/50">СОШИАЛ</p>
+              <div className="mt-4 flex flex-col gap-2 text-[14px] text-white/85">
+                <a href="https://www.instagram.com/kitchenstudiomn/" target="_blank" rel="noreferrer" className="hover:text-white">Instagram ↗</a>
+                <a href="https://www.facebook.com/Kitchenstudiomn" target="_blank" rel="noreferrer" className="hover:text-white">Facebook ↗</a>
+              </div>
+            </div>
+          </div>
+
+          {/* Хамгийн доод мөр. new Date().getFullYear() = одоогийн он автоматаар */}
+          <div className="mt-14 flex flex-col justify-between gap-3 border-t border-white/10 pt-6 text-[11px] text-white/40 sm:flex-row">
+            <span>© {new Date().getFullYear()} Kitchen Studio · Тулга Төхөөрөмж ХХК</span>
+            <a href="#haus-home" className="hover:text-white/70">Дээш буцах ↑</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,0 +1,392 @@
+main[data-theme="classic"] {
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+/* Velaa-inspired editorial look: cinematic full-bleed imagery, quiet ivory
+   panels, generous spacing, centered hero copy and a muted brass accent. */
+main[data-theme="velaa"] {
+  background: #f6f3ed !important;
+  color: #28251f !important;
+  --velaa-gold: #b89a63;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+main[data-theme="velaa"] header {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  background: rgb(18 18 17 / 46%) !important;
+  color: #fff !important;
+  border-color: rgb(255 255 255 / 18%) !important;
+  backdrop-filter: blur(8px);
+}
+
+main[data-theme="velaa"] header [role="group"] {
+  border-color: rgb(255 255 255 / 38%) !important;
+}
+
+main[data-theme="velaa"] header [aria-pressed="true"] {
+  background-color: var(--velaa-gold) !important;
+  color: #181713 !important;
+}
+
+main[data-theme="velaa"] header [aria-pressed="false"] { color: #fff !important; }
+main[data-theme="velaa"] header > div > div > button:last-child { background: var(--velaa-gold) !important; color: #171612 !important; }
+
+main[data-theme="velaa"] #home {
+  min-height: max(740px, 100svh);
+  align-items: center;
+  justify-content: center;
+}
+
+main[data-theme="velaa"] #home > div.max-w-7xl {
+  padding-top: 150px;
+  padding-bottom: 80px;
+  text-align: center;
+}
+
+main[data-theme="velaa"] #home > div.max-w-7xl > p:first-child,
+main[data-theme="velaa"] #home > div.max-w-7xl > div:nth-last-child(1),
+main[data-theme="velaa"] #home > div.max-w-7xl > div:nth-last-child(2) {
+  justify-content: center;
+}
+
+main[data-theme="velaa"] #home h1 {
+  max-width: 900px;
+  margin-inline: auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+main[data-theme="velaa"] #home > div.max-w-7xl > p:nth-of-type(2) { margin-inline: auto; }
+main[data-theme="velaa"] #home > div.absolute { background-image: linear-gradient(180deg, rgb(0 0 0 / 40%), rgb(0 0 0 / 44%)) !important; }
+main[data-theme="velaa"] [class*="text-[#b6382a]"],
+main[data-theme="velaa"] [class*="text-[#a34837]"],
+main[data-theme="velaa"] [class*="text-[#ff9878]"] { color: var(--velaa-gold) !important; }
+main[data-theme="velaa"] [class*="bg-[#b6382a]"] { background: var(--velaa-gold) !important; color: #1d1a14 !important; }
+main[data-theme="velaa"] [class*="border-[#b6382a]"] { border-color: var(--velaa-gold) !important; }
+main[data-theme="velaa"] #highlights,
+main[data-theme="velaa"] #gallery { background: #eee9df !important; }
+main[data-theme="velaa"] #training article { background: #fbfaf7 !important; border-color: rgb(40 37 31 / 12%) !important; }
+main[data-theme="velaa"] #events { background: #24231f !important; }
+main[data-theme="velaa"] #team-quote { background: #eee9df !important; }
+main[data-theme="velaa"] footer { background: #22211d !important; }
+
+@media (max-width: 767px) {
+  main[data-theme="velaa"] header { top: 36px; }
+  main[data-theme="velaa"] header > div { flex-wrap: wrap; }
+  main[data-theme="velaa"] header nav { display: none; }
+}
+
+/* Tomato-inspired presentation: dark restaurant navigation, full-bleed hero,
+   bright editorial sections, and a restrained golden accent. */
+main[data-theme="tomato"] {
+  background-color: #fff !important;
+  color: #36332f !important;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+main[data-theme="tomato"] header {
+  background-color: rgb(20 20 20 / 97%) !important;
+  border-color: rgb(255 255 255 / 12%) !important;
+  color: #fff !important;
+}
+
+main[data-theme="tomato"] header [role="group"] {
+  border-color: rgb(255 255 255 / 28%) !important;
+}
+
+main[data-theme="tomato"] header [aria-pressed="true"] {
+  background-color: #c9a45e !important;
+  color: #171614 !important;
+}
+
+main[data-theme="tomato"] header [aria-pressed="false"] {
+  color: #fff !important;
+}
+
+main[data-theme="tomato"] [class*="text-[#b6382a]"],
+main[data-theme="tomato"] [class*="text-[#a34837]"] {
+  color: #c9a45e !important;
+}
+
+main[data-theme="tomato"] [class*="bg-[#b6382a]"] {
+  background-color: #c9a45e !important;
+  color: #171614 !important;
+}
+
+main[data-theme="tomato"] [class*="border-[#b6382a]"] {
+  border-color: #c9a45e !important;
+}
+
+main[data-theme="tomato"] #home > div.max-w-7xl {
+  text-align: center;
+}
+
+main[data-theme="tomato"] #home > div.max-w-7xl > p:first-child,
+main[data-theme="tomato"] #home > div.max-w-7xl > div:nth-last-child(1),
+main[data-theme="tomato"] #home > div.max-w-7xl > div:nth-last-child(2) {
+  justify-content: center;
+}
+
+main[data-theme="tomato"] #home h1 {
+  margin-inline: auto;
+  max-width: 100%;
+  letter-spacing: -0.025em;
+}
+
+main[data-theme="tomato"] #home > div.max-w-7xl > p:nth-of-type(2) {
+  margin-inline: auto;
+}
+
+main[data-theme="tomato"] #home > div.absolute {
+  background-image: linear-gradient(180deg, rgb(0 0 0 / 48%), rgb(0 0 0 / 64%)) !important;
+}
+
+main[data-theme="tomato"] #about {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 3rem;
+  row-gap: 2rem;
+}
+
+main[data-theme="tomato"] #about-title {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  text-align: center;
+}
+
+main[data-theme="tomato"] #about-collage {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+main[data-theme="tomato"] #about-copy {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  color: #68635e !important;
+}
+
+main[data-theme="tomato"] #about-copy p:first-child,
+main[data-theme="tomato"] #about-copy p:nth-child(2),
+main[data-theme="tomato"] #about-copy p:nth-child(3),
+main[data-theme="tomato"] #about-copy div {
+  color: #68635e !important;
+}
+
+main[data-theme="tomato"] #about-title > p:last-child {
+  color: #85817a !important;
+}
+
+main[data-theme="tomato"] #highlights,
+main[data-theme="tomato"] #gallery {
+  background-color: #f4f3f0 !important;
+}
+
+main[data-theme="tomato"] #training > div:first-child {
+  display: block;
+  text-align: center;
+}
+
+main[data-theme="tomato"] #training > div:first-child > div > p,
+main[data-theme="tomato"] #training > div:first-child > p {
+  margin-inline: auto;
+}
+
+main[data-theme="tomato"] #training article {
+  border: 0;
+  border-top: 2px solid #c9a45e;
+  background-color: #f8f7f4 !important;
+  text-align: center;
+}
+
+main[data-theme="tomato"] #training article p:not(:first-child) {
+  color: #68635e !important;
+}
+
+main[data-theme="tomato"] #training article p:last-child {
+  border-color: rgb(0 0 0 / 12%) !important;
+}
+
+main[data-theme="tomato"] #events {
+  background-color: #191817 !important;
+}
+
+main[data-theme="tomato"] #events [class*="text-[#ff9878]"] {
+  color: #d6b36e !important;
+}
+
+main[data-theme="tomato"] #team-quote {
+  background-color: #f4f3f0 !important;
+}
+
+main[data-theme="tomato"] #team-quote p {
+  color: #4f4b46 !important;
+}
+
+main[data-theme="tomato"] #team-quote p:last-child {
+  color: #a78342 !important;
+}
+
+main[data-theme="tomato"] #gallery > div:first-child {
+  text-align: center;
+}
+
+main[data-theme="tomato"] #gallery > div:first-child > div:first-child p {
+  color: #a78342 !important;
+}
+
+main[data-theme="tomato"] #gallery > div:first-child > p {
+  margin-inline: auto;
+  color: #77716b !important;
+}
+
+main[data-theme="tomato"] footer {
+  background-color: #181817 !important;
+}
+
+@media (max-width: 1023px) {
+  main[data-theme="tomato"] #about {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  main[data-theme="tomato"] #about-title,
+  main[data-theme="tomato"] #about-collage,
+  main[data-theme="tomato"] #about-copy {
+    grid-column: 1;
+  }
+
+  main[data-theme="tomato"] #about-title { grid-row: 1; }
+  main[data-theme="tomato"] #about-collage { grid-row: 2; }
+  main[data-theme="tomato"] #about-copy { grid-row: 3; }
+}
+
+/* Keep the mobile layout inside the device width and give the theme picker
+   its own row, so the contact/booking button never pushes the page sideways. */
+main[data-theme] { width: 100%; overflow-x: clip; }
+
+@media (max-width: 640px) {
+  main[data-theme] > div:first-child {
+    padding-inline: 0.75rem !important;
+    font-size: 9px !important;
+    letter-spacing: 0.08em !important;
+    line-height: 1.5;
+  }
+
+  main[data-theme] header > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    padding: 0.7rem 0.85rem;
+  }
+
+  main[data-theme] header > div > div:last-child {
+    display: flex;
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 0.45rem;
+  }
+
+  main[data-theme] header [role="group"] {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: stretch;
+  }
+
+  main[data-theme] header [role="group"] button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.55rem 0.25rem;
+    font-size: 8px;
+    letter-spacing: 0.045em;
+    white-space: nowrap;
+  }
+
+  main[data-theme] header > div > div:last-child > button,
+  main[data-theme] header > div > div:last-child > a {
+    flex: 0 0 auto;
+    padding: 0.65rem 0.7rem;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  main[data-theme] #home {
+    min-height: max(650px, 100svh);
+  }
+
+  main[data-theme] #home > div.max-w-7xl {
+    padding: 7rem 1.2rem 3rem;
+    text-align: left;
+  }
+
+  main[data-theme="tomato"] #home > div.max-w-7xl,
+  main[data-theme="velaa"] #home > div.max-w-7xl {
+    text-align: center;
+  }
+
+  main[data-theme] #home h1 {
+    max-width: 100%;
+    font-size: clamp(2.35rem, 10.5vw, 3.5rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    overflow-wrap: break-word;
+  }
+
+  main[data-theme] #home > div.max-w-7xl > p:nth-of-type(2) {
+    max-width: 34rem;
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  main[data-theme] #home > div.max-w-7xl > div.mt-9 {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  main[data-theme] #home > div.max-w-7xl > div.mt-9 a {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    padding: 0.9rem 0.75rem;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.5;
+    letter-spacing: 0.07em;
+  }
+
+  main[data-theme="velaa"] #home {
+    min-height: max(680px, 100svh);
+  }
+
+  .booking-overlay {
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .booking-dialog {
+    max-height: calc(100dvh - 24px);
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .booking-dialog h2 { font-size: 1.55rem; line-height: 1.2; }
+  .booking-dialog form { grid-template-columns: minmax(0, 1fr); }
+  .booking-dialog form > * { grid-column: 1 / -1; min-width: 0; }
+  .booking-dialog input,
+  .booking-dialog select,
+  .booking-dialog textarea { width: 100%; min-width: 0; font-size: 16px; }
+  .booking-dialog form button { width: 100%; padding-inline: 0.75rem; line-height: 1.5; }
+}
